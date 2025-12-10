@@ -58,6 +58,37 @@ Añade lo siguiente:
 
 > **IMPORTANTE:** Reemplaza `C:\\Ruta\\A\\Tu\\Repo` con la ruta absoluta donde clonaste este proyecto. Asegúrate de usar doble barra invertida `\\` en Windows.
 
+### 2. Antigravity (Gemini)
+
+Edita el archivo de configuración de MCP en Antigravity para añadir el servidor.
+
+1.  Localiza el archivo de configuración en:
+    `C:\Users\<TU_USUARIO>\.gemini\antigravity\mcp_config.json`
+
+2.  Añade la configuración del servidor dentro del objeto `mcpServers`. Si el archivo ya tiene otros servidores (como `perplexity-ask`), añade `sqlServer` como una nueva clave.
+
+```json
+{
+  "mcpServers": {
+    "sqlServer": {
+      "command": "C:\\Ruta\\A\\Tu\\Repo\\venv\\Scripts\\python.exe",
+      "args": ["-m", "mssql_mcp_server"],
+      "env": {
+        "MSSQL_SERVER": "TU_IP_O_HOST",
+        "MSSQL_DATABASE": "NOMBRE_BASE_DE_DATOS",
+        "MSSQL_USER": "TU_USUARIO",
+        "MSSQL_PASSWORD": "TU_CONTRASEÑA",
+        "MSSQL_ENCRYPT": "true",
+        "MSSQL_TRUST_SERVER_CERTIFICATE": "true",
+        "PYTHONPATH": "C:\\Ruta\\A\\Tu\\Repo\\src"
+      }
+    }
+  }
+}
+```
+
+> **NOTA:** Asegúrate de que las rutas al ejecutable de Python y al repositorio sean correctas y absolutas.
+
 ## Desarrollo y Pruebas
 
 Para probar la conexión sin el asistente, usa el script incluido:
