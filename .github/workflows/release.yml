@@ -1,0 +1,59 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger on version tags like v1.0.0
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Get all history for changelog
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Generate changelog
+      id: changelog
+      run: |
+        # Generate changelog from git history
+        echo "## What's Changed" > RELEASE_NOTES.md
+        echo "" >> RELEASE_NOTES.md
+        
+        # Get commits since last tag
+        LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+        if [ -z "$LAST_TAG" ]; then
+          git log --pretty=format:"* %s (%h)" >> RELEASE_NOTES.md
+        else
+          git log ${LAST_TAG}..HEAD --pretty=format:"* %s (%h)" >> RELEASE_NOTES.md
+        fi
+        
+        echo "" >> RELEASE_NOTES.md
+        echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${LAST_TAG}...v${{ github.event.inputs.version || github.ref_name }}" >> RELEASE_NOTES.md
+    
+    - name: Create Release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        VERSION="${{ github.event.inputs.version || github.ref_name }}"
+        VERSION="${VERSION#v}"  # Remove 'v' prefix if present
+        
+        gh release create "v${VERSION}" \
+          --title "Release v${VERSION}" \
+          --notes-file RELEASE_NOTES.md \
+          --draft
